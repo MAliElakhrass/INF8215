@@ -26,6 +26,7 @@ class State:
     """
     Constructeur d'un état à partir du mouvement (c,d)
     """
+
     def move(self, c, d):
         s = State(self.pos)
         s.prev = self
@@ -33,6 +34,7 @@ class State:
         s.c = c
         s.d = d
         s.nb_moves = self.nb_moves + 1
+        s.rock = s.prev.rock
         # TODO
         return s
 
@@ -51,28 +53,44 @@ class State:
     def success(self):
         return self.pos[0] == 4
 
+    def car_blocked(self, rh):
+        penalite = 0
+
+        possible_moves = rh.possible_moves(self)
+        car_moved = [move.c for move in possible_moves]
+        for i in range(1, rh.nbcars):
+            if i not in car_moved:
+                penalite += (rh.move_on[i] + 1)
+
+        return penalite
+
     def estimee(self, rh):
-        cost = 20 * self.pos[0]
+        cost = 100 * self.pos[0]
 
         for i in range(1, rh.nbcars):
             if not rh.horiz[i] and rh.move_on[i] >= self.pos[0] + rh.length[0]:
                 if rh.length[i] == 3:
-                    cost += self.pos[i] * 3
+                    cost += (self.pos[i] + 1) * 15
 
                     for j in range(self.pos[i] + rh.length[i], 6):
                         if rh.free_pos[j][rh.move_on[i]]:
-                            cost += 1
+                            cost += (rh.move_on[i] * 2)
                 else:
                     if self.pos[i] == 1:
                         if rh.free_pos[0][rh.move_on[i]]:
-                            cost += 1
+                            cost += rh.move_on[i]
                     elif self.pos[i] == 2:
                         if rh.free_pos[4][rh.move_on[i]]:
-                            cost += 1
+                            cost += rh.move_on[i]
+            elif rh.horiz[i] and (self.pos[i] + rh.length[i]) <= (self.pos[0] + rh.length[0]):  # Si t a gauche de l'auto rouge et que tu bloques rien
+                cost += 20
 
         for i in range(self.pos[0] + rh.length[0], 6):
             if rh.free_pos[2][i]:
-                cost += 5
+                cost += 20
+
+        # Penalite si une auto est bloque
+        cost -= self.car_blocked(rh)
 
         return cost
 

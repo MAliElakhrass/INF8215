@@ -44,6 +44,17 @@ def testPossibleRockMoves():
     print(len(sols))
 
 
+def test_print_move():
+    rh = Rushhour([False], [2], [2], ["rouge"])
+    s = State([0])
+    s = s.put_rock((3, 1)) # Roche dans la case 3-1
+    s = s.move(0, 1) # Voiture rouge vers la droite
+
+    algo = MiniMaxSearch(rh, s, 1)
+    algo.print_move(True, s)
+    algo.print_move(False, s)
+
+
 def test9moves():
     rh = Rushhour([True, False, False, False, True],
                   [2, 3, 2, 3, 3],
@@ -63,6 +74,7 @@ def test16moves():
     rh = Rushhour([True, True, False, False, True, True, False, False],
                   [2, 2, 3, 2, 3, 2, 3, 3],
                   [2, 0, 0, 0, 5, 4, 5, 3],
+     #                        1        2        3          4         5        6       7
                   ["rouge", "vert", "mauve", "orange", "emeraude", "lime", "jaune", "bleu"])
     s = State([1, 0, 1, 4, 2, 4, 0, 1])
     algo = MiniMaxSearch(rh, s, 1)
@@ -84,5 +96,10 @@ def test14moves():
 
 
 if __name__ == '__main__':
-    test16moves()
+    # test_print_move()
+    # test9moves()
+
+    # test16moves()
+
+    test14moves()
 

@@ -15,7 +15,8 @@ class MiniMaxSearch:
         children = self.rushhour.possible_moves(current_state)
 
         for child in children:
-            if child in visited:
+            index = child.c
+            if child.d in visited[index]:
                 children.remove(child)
 
         if current_depth == self.search_depth or len(children) == 0 or current_state.success():
@@ -76,19 +77,37 @@ class MiniMaxSearch:
 
     def solve(self, state, is_singleplayer):
         # TODO
-        visited = set()
+        visited = []
+        for i in range(0, self.rushhour.nbcars):
+            visited.append(set())
+
         compteur = 0
         if is_singleplayer:
-            print("Etat initial")
-            self.rushhour.print_pretty_grid(state)
             while not state.success(): # and compteur < 15000:
                 compteur += 1
-                visited.add(state)
                 state = self.decide_best_move_1(state, visited)
-                self.rushhour.print_pretty_grid(state)
-        print(compteur)
+                visited[state.c].add(state.d * -1)
+                print("Mouvement: " + str(compteur))
+                self.print_move(is_singleplayer, state)
+
         return state
 
     def print_move(self, is_max, state):
         # TODO
+        index_car = state.c
+
+        if is_max:
+            if self.rushhour.horiz[index_car]:
+                if state.d == +1:
+                    print("Voiture " + self.rushhour.color[index_car] + " vers la droite")
+                else:
+                    print("Voiture " + self.rushhour.color[index_car] + " vers la gauche")
+            else:
+                if state.d == +1:
+                    print("Voiture " + self.rushhour.color[index_car] + " vers le bas")
+                else:
+                    print("Voiture " + self.rushhour.color[index_car] + " vers le haut")
+        else:
+            print("Roche dans la case " + str(state.rock[0]) + "-" + str(state.rock[1]))
+
         return None
