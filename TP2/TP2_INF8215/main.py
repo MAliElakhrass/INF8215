@@ -95,11 +95,32 @@ def test14moves():
     algo.solve(s, True)
 
 
+def test9moves3depth():
+    rh = Rushhour([True, False, False, False, True],
+                  [2, 3, 2, 3, 3],
+                  [2, 4, 5, 1, 5],
+                  ["rouge", "vert", "bleu", "orange", "jaune"])
+    s = State([1, 0, 1, 3, 2])
+    algo = MiniMaxSearch(rh, s, 3)
+    algo.rushhour.init_positions(s)
+    print(algo.rushhour.free_pos)
+    algo.solve(s, False)
+
 if __name__ == '__main__':
-    # test_print_move()
+    """
+    print("Partie 1 Implémentation de Rush Hour (25pts)\n")
+    testRocks()
+    testPossibleRockMoves()
+
+    print("\n\nPartie 2 Implémentation d'une recherche minimax (35pts)\n")
+    print("2.1 Implémentation simple")
+    print("Test 9 moves")
     test9moves()
-
+    print("Test 16 moves")
     test16moves()
-
+    print("Test 14 moves")
     test14moves()
+    """
+    print("2.2 Implémentation adversarielle")
+    test9moves3depth()
 

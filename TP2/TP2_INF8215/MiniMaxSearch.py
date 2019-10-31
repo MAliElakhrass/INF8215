@@ -18,7 +18,7 @@ class MiniMaxSearch:
             if child.d != visited[child.c]:
                 new_moves.append(child)
 
-        if current_depth == self.search_depth or len(children) == 0 or current_state.success():
+        if current_depth == self.search_depth or len(new_moves) == 0 or current_state.success():
             current_state.score_state(self.rushhour)
             return current_state
 
@@ -31,23 +31,34 @@ class MiniMaxSearch:
         return best_max
 
 
-    def minimax_2(self, current_depth, current_state, is_max):
+    def minimax_2(self, current_depth, current_state, is_max, visited):
         # TODO
-        best_move = None
-        best_value_min = math.inf
-        best_value_max = -math.inf
-        for child_move in self.rushhour.possible_moves(current_state):
-            temp_value = self.value(current_state, current_depth)
-            if is_max:
-                if temp_value > best_value_max:
-                    best_value_max = temp_value
-                    best_move = child_move
-            else:
-                if temp_value < best_value_min:
-                    best_value_min = temp_value
-                    best_move = child_move
+        if current_depth == self.search_depth or current_state.success():
+            current_state.score_state(self.rushhour)
+            return current_state
 
-        return best_move
+        if is_max:
+            children = self.rushhour.possible_moves(current_state)
+            new_moves = []
+            for child in children:
+                if child.d != visited[child.c]:
+                    new_moves.append(child)
+
+            values = []
+            for child_state in new_moves:
+                values.append(self.minimax_2(current_depth + 1, child_state, False, visited))
+
+            best_move = max(values)
+            return best_move
+        else:
+            children = self.rushhour.possible_rock_moves(current_state)
+            values = []
+            for child_state in children:
+                values.append(self.minimax_2(current_depth + 1, child_state, True, visited))
+
+            best_move = min(values)
+            return best_move
+
 
     def minimax_pruning(self, current_depth, current_state, is_max, alpha, beta):
         # TODO
@@ -62,9 +73,14 @@ class MiniMaxSearch:
         return self.minimax_1(0, state, visited)
         # return state.move(best_child.c, best_child.d)
 
-    def decide_best_move_2(self, state, is_max):
+    def decide_best_move_2(self, state, is_max, visited):
         # TODO
-        return self.minimax_2(0, state, is_max)
+        best_move = self.minimax_2(0, state, is_max, visited)
+
+        if is_max:
+            return state.move(best_move.c, best_move.d)
+        else:
+            return state.put_rock(best_move.rock)
 
     def decide_best_move_pruning(self, is_max):
         # TODO
@@ -85,15 +101,24 @@ class MiniMaxSearch:
                 state = self.decide_best_move_1(state, visited)
                 visited[state.c] = state.d * -1
                 print("Mouvement: " + str(compteur))
-                self.print_move(is_singleplayer, state)
+                self.print_move(True, state)
+        else:
+            isMax = True
+            while not state.success():
+                compteur += 1
+                state = self.decide_best_move_2(state, isMax, visited)
+                if state.c is not None and state.d is not None:
+                    visited[state.c] = state.d * -1
+                print("Mouvement: " + str(compteur))
+                self.print_move(isMax, state)
+                isMax = not isMax
 
         return state
 
     def print_move(self, is_max, state):
         # TODO
-        index_car = state.c
-
         if is_max:
+            index_car = state.c
             if self.rushhour.horiz[index_car]:
                 if state.d == +1:
                     print("Voiture " + self.rushhour.color[index_car] + " vers la droite")
