@@ -13,18 +13,17 @@ class MiniMaxSearch:
     def minimax_1(self, current_depth, current_state, visited):
         # TODO
         children = self.rushhour.possible_moves(current_state)
-
+        new_moves = []
         for child in children:
-            index = child.c
-            if child.d in visited[index]:
-                children.remove(child)
+            if child.d != visited[child.c]:
+                new_moves.append(child)
 
         if current_depth == self.search_depth or len(children) == 0 or current_state.success():
             current_state.score_state(self.rushhour)
             return current_state
 
         values = []
-        for child_state in children:
+        for child_state in new_moves:
             values.append(self.minimax_1(current_depth + 1, child_state, visited))
 
         best_max = max(values)
@@ -77,16 +76,14 @@ class MiniMaxSearch:
 
     def solve(self, state, is_singleplayer):
         # TODO
-        visited = []
-        for i in range(0, self.rushhour.nbcars):
-            visited.append(set())
+        visited = [0] * self.rushhour.nbcars
 
         compteur = 0
         if is_singleplayer:
             while not state.success(): # and compteur < 15000:
                 compteur += 1
                 state = self.decide_best_move_1(state, visited)
-                visited[state.c].add(state.d * -1)
+                visited[state.c] = state.d * -1
                 print("Mouvement: " + str(compteur))
                 self.print_move(is_singleplayer, state)
 

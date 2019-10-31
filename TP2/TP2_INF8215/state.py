@@ -82,8 +82,11 @@ class State:
                     elif self.pos[i] == 2:
                         if rh.free_pos[4][rh.move_on[i]]:
                             cost += rh.move_on[i]
-            elif rh.horiz[i] and (self.pos[i] + rh.length[i]) <= (self.pos[0] + rh.length[0]):  # Si t a gauche de l'auto rouge et que tu bloques rien
+            elif rh.horiz[i] and (self.pos[i] + rh.length[i] - 1) < (self.pos[0]):
+                cost += 100
+            elif rh.horiz[i] and (self.pos[i] + rh.length[i]) <= (self.pos[0] + rh.length[0]):  # Si t a gauche de l'auto rouge
                 cost += 20
+
 
         for i in range(self.pos[0] + rh.length[0], 6):
             if rh.free_pos[2][i]:

@@ -97,9 +97,9 @@ def test14moves():
 
 if __name__ == '__main__':
     # test_print_move()
-    # test9moves()
+    test9moves()
 
-    # test16moves()
+    test16moves()
 
     test14moves()
 
