@@ -43,15 +43,16 @@ class Rushhour:
         self.init_positions(state)
         new_states = []
         # TODO
-        for i in range(len(self.free_pos)):
-            for j in range(len(self.free_pos[i])):
+        state_temp = state
+        for i in range(0, 6):
+            for j in range(0, 6):
                 if self.free_pos[i][j]:
                     if state.rock is not None:
                         if state.rock[1] != j and state.rock[0] != i and i != 2:
-                            new_states.append(state.put_rock((i, j)))
+                            new_states.append(state_temp.put_rock((i, j)))
                     else:
                         if i != 2:
-                            new_states.append(state.put_rock((i, j)))
+                            new_states.append(state_temp.put_rock((i, j)))
 
         return new_states
 

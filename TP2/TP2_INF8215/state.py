@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 
 class State:
@@ -40,7 +41,7 @@ class State:
 
     def put_rock(self, rock_pos):
         # TODO
-        s = State(self.pos)
+        s = copy.deepcopy(self)
         s.rock = rock_pos
 
         return s

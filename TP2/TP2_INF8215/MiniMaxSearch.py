@@ -4,61 +4,57 @@ import numpy as np
 
 from state import State
 
+
 class MiniMaxSearch:
     def __init__(self, rushHour, initial_state, search_depth):
         self.rushhour = rushHour
         self.state = initial_state
         self.search_depth = search_depth
 
-    def minimax_1(self, current_depth, current_state, visited):
-        # TODO
-        children = self.rushhour.possible_moves(current_state)
+    def remove_reverse_move(self, state, visited):
+        children = self.rushhour.possible_moves(state)
         new_moves = []
         for child in children:
             if child.d != visited[child.c]:
                 new_moves.append(child)
 
-        if current_depth == self.search_depth or len(new_moves) == 0 or current_state.success():
+        return new_moves
+
+    def minimax_1(self, current_depth, current_state, visited):
+        # TODO
+        children = self.remove_reverse_move(current_state, visited)
+
+        if current_depth == self.search_depth or current_state.success():
             current_state.score_state(self.rushhour)
             return current_state
 
         values = []
-        for child_state in new_moves:
+        for child_state in children:
             values.append(self.minimax_1(current_depth + 1, child_state, visited))
 
         best_max = max(values)
 
         return best_max
 
-
+    # Retourner le score au lieu d'un state, quand t au depth de niveau 1, tu choisis le meilleur score
+    # AI, Roche, AI, Roche, ...
     def minimax_2(self, current_depth, current_state, is_max, visited):
-        # TODO
         if current_depth == self.search_depth or current_state.success():
             current_state.score_state(self.rushhour)
             return current_state
 
         if is_max:
-            children = self.rushhour.possible_moves(current_state)
-            new_moves = []
-            for child in children:
-                if child.d != visited[child.c]:
-                    new_moves.append(child)
-
-            values = []
-            for child_state in new_moves:
-                values.append(self.minimax_2(current_depth + 1, child_state, False, visited))
-
-            best_move = max(values)
-            return best_move
-        else:
-            children = self.rushhour.possible_rock_moves(current_state)
-            values = []
+            max_values = []
+            children = self.remove_reverse_move(current_state, visited)
             for child_state in children:
-                values.append(self.minimax_2(current_depth + 1, child_state, True, visited))
-
-            best_move = min(values)
-            return best_move
-
+                max_values.append(self.minimax_2(current_depth + 1, child_state, False, visited))
+            return max(max_values)
+        else:
+            min_values = []
+            children = self.rushhour.possible_rock_moves(current_state)
+            for child_state in children:
+                min_values.append(self.minimax_2(current_depth + 1, child_state, True, visited))
+            return min(min_values)
 
     def minimax_pruning(self, current_depth, current_state, is_max, alpha, beta):
         # TODO
@@ -75,12 +71,7 @@ class MiniMaxSearch:
 
     def decide_best_move_2(self, state, is_max, visited):
         # TODO
-        best_move = self.minimax_2(0, state, is_max, visited)
-
-        if is_max:
-            return state.move(best_move.c, best_move.d)
-        else:
-            return state.put_rock(best_move.rock)
+        return self.minimax_2(0, state, is_max, visited)
 
     def decide_best_move_pruning(self, is_max):
         # TODO
@@ -93,10 +84,10 @@ class MiniMaxSearch:
     def solve(self, state, is_singleplayer):
         # TODO
         visited = [0] * self.rushhour.nbcars
-
         compteur = 0
+
         if is_singleplayer:
-            while not state.success(): # and compteur < 15000:
+            while not state.success():
                 compteur += 1
                 state = self.decide_best_move_1(state, visited)
                 visited[state.c] = state.d * -1
@@ -104,16 +95,38 @@ class MiniMaxSearch:
                 self.print_move(True, state)
         else:
             isMax = True
+            i = 1
             while not state.success():
                 compteur += 1
                 state = self.decide_best_move_2(state, isMax, visited)
-                if state.c is not None and state.d is not None:
+                if isMax:
                     visited[state.c] = state.d * -1
-                print("Mouvement: " + str(compteur))
-                self.print_move(isMax, state)
+                i = self.yed(state, compteur, i)
+
                 isMax = not isMax
 
         return state
+
+    def yed(self, state, compteur, i):
+
+        if compteur % 2 == 1:
+            first_state = state.prev
+            print("Mouvement: " + str(i))
+            self.print_move(True, first_state)
+            print("Mouvement: " + str(i + 1))
+            self.print_move(False, state)
+            print("Mouvement: " + str(i + 2))
+            self.print_move(True, state)
+        else:
+            first_state = state.prev
+            print("Mouvement: " + str(i))
+            self.print_move(False, first_state)
+            print("Mouvement: " + str(i + 1))
+            self.print_move(True, state)
+            print("Mouvement: " + str(i + 2))
+            self.print_move(False, state)
+
+        return i + 3
 
     def print_move(self, is_max, state):
         # TODO
