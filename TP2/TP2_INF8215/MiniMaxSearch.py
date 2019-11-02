@@ -100,8 +100,11 @@ class MiniMaxSearch:
             return current_state
 
         if is_max:
-            max_values = []
             children = self.remove_reverse_move(current_state, visited)
+            if len(children) == 0:
+                children = self.rushhour.possible_moves(current_state)
+
+            max_values = []
             for child_state in children:
                 max_values.append(self.expectimax(current_depth + 1, child_state, False, visited))
 
