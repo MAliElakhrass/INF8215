@@ -146,6 +146,32 @@ def test9movesAlphaBeta():
     algo.solve(s, False, algo_type="pruning")
 
 
+def test16movesAlphaBeta():
+    # solution optimale: 16 moves
+    rh = Rushhour([True, True, False, False, True, True, False, False],
+                  [2, 2, 3, 2, 3, 2, 3, 3],
+                  [2, 0, 0, 0, 5, 4, 5, 3],
+                  ["rouge", "vert", "mauve", "orange", "emeraude", "lime", "jaune", "bleu"])
+    s = State([1, 0, 1, 4, 2, 4, 0, 1])
+    algo = MiniMaxSearch(rh, s, 3)
+    algo.rushhour.init_positions(s)
+    print(algo.rushhour.free_pos)
+    algo.solve(s, False, algo_type="pruning")
+
+
+def test14movesAlphaBeta():
+    # solution optimale: 14 moves
+    rh = Rushhour([True, False, True, False, False, False, True, True, False, True, True],
+                  [2, 2, 3, 2, 2, 3, 3, 2, 2, 2, 2],
+                  [2, 0, 0, 3, 4, 5, 3, 5, 2, 5, 4],
+                  ["rouge", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
+    s = State([0, 0, 3, 1, 2, 1, 0, 0, 4, 3, 4])
+    algo = MiniMaxSearch(rh, s, 3)
+    algo.rushhour.init_positions(s)
+    print(algo.rushhour.free_pos)
+    algo.solve(s, False, algo_type="pruning")
+
+
 if __name__ == '__main__':
     """
     # print("Partie 1 Implémentation de Rush Hour (25pts)\n")
@@ -172,4 +198,9 @@ if __name__ == '__main__':
     """
 
     print("\n\nPartie 3 Élagage Alpha-Beta (15pts)\n")
+    print("Test 9 moves")
     test9movesAlphaBeta()
+    print("Test 16 moves")
+    test16movesAlphaBeta()
+    print("Test 14 moves")
+    test14movesAlphaBeta()
