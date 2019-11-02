@@ -56,9 +56,32 @@ class MiniMaxSearch:
                 min_values.append(self.minimax_2(current_depth + 1, child_state, True, visited))
             return min(min_values)
 
-    def minimax_pruning(self, current_depth, current_state, is_max, alpha, beta):
+    def minimax_pruning(self, current_depth, current_state, is_max, alpha, beta, visited):
         # TODO
-        return best_move
+        if current_depth == self.search_depth or current_state.success():
+            current_state.score_state(self.rushhour)
+            return current_state
+
+        if is_max:
+            max_values = []
+            children = self.remove_reverse_move(current_state, visited)
+            for child_state in children:
+                child_value = self.minimax_pruning(current_depth + 1, child_state, False, alpha, beta, visited)
+                max_values.append(child_value)
+
+                if alpha >= child_value.score:
+                    break
+            return max(max_values)
+        else:
+            min_values = []
+            children = self.rushhour.possible_rock_moves(current_state)
+            for child_state in children:
+                child_value = self.minimax_pruning(current_depth + 1, child_state, True, alpha, beta, visited)
+                min_values.append(child_value)
+
+                if child_value.score >= beta:
+                    break
+            return min(min_values)
 
     def expectimax(self, current_depth, current_state, is_max):
         # TODO
@@ -73,32 +96,44 @@ class MiniMaxSearch:
         # TODO
         return self.minimax_2(0, state, is_max, visited)
 
-    def decide_best_move_pruning(self, is_max):
+    def decide_best_move_pruning(self, state, is_max, visited):
         # TODO
-        return None
+        return self.minimax_pruning(0, state, is_max, -math.inf, math.inf, visited)
 
     def decide_best_move_expectimax(self, is_max):
         # TODO
         return None
 
-    def solve(self, state, is_singleplayer):
+    def solve(self, state, is_singleplayer, algo_type=None):
         # TODO
         visited = [0] * self.rushhour.nbcars
         compteur = 0
 
-        if is_singleplayer:
-            while not state.success():
-                compteur += 1
-                state = self.decide_best_move_1(state, visited)
-                visited[state.c] = state.d * -1
-                print("Mouvement: " + str(compteur))
-                self.print_move(True, state)
-        else:
+        if algo_type is None:
+            if is_singleplayer:
+                while not state.success():
+                    compteur += 1
+                    state = self.decide_best_move_1(state, visited)
+                    visited[state.c] = state.d * -1
+                    print("Mouvement: " + str(compteur))
+                    self.print_move(True, state)
+            else:
+                isMax = True
+                i = 1
+                while not state.success():
+                    compteur += 1
+                    state = self.decide_best_move_2(state, isMax, visited)
+                    if isMax:
+                        visited[state.c] = state.d * -1
+                    i = self.print_previous_depth(state, compteur, i)
+
+                    isMax = not isMax
+        elif algo_type == "pruning":
             isMax = True
             i = 1
             while not state.success():
                 compteur += 1
-                state = self.decide_best_move_2(state, isMax, visited)
+                state = self.decide_best_move_pruning(state, isMax, visited)
                 if isMax:
                     visited[state.c] = state.d * -1
                 i = self.print_previous_depth(state, compteur, i)
