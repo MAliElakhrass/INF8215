@@ -2,6 +2,8 @@ import math
 
 import numpy as np
 
+import random
+
 from state import State
 
 
@@ -91,9 +93,26 @@ class MiniMaxSearch:
                     break
             return min(min_values), nodes
 
-    def expectimax(self, current_depth, current_state, is_max):
+    def expectimax(self, current_depth, current_state, is_max, visited):
         # TODO
-        return best_move
+        if current_depth == self.search_depth or current_state.success():
+            current_state.score_state(self.rushhour)
+            return current_state
+
+        if is_max:
+            max_values = []
+            children = self.remove_reverse_move(current_state, visited)
+            for child_state in children:
+                max_values.append(self.expectimax(current_depth + 1, child_state, False, visited))
+
+            return max(max_values)
+        else:
+            min_values = []
+            children = self.rushhour.possible_rock_moves(current_state)
+            for child_state in children:
+                min_values.append(self.expectimax(current_depth + 1, child_state, True, visited))
+
+            return random.choice(min_values)
 
     def decide_best_move_1(self, state, visited):
         # TODO
@@ -108,9 +127,9 @@ class MiniMaxSearch:
         # TODO
         return self.minimax_pruning(0, state, is_max, -math.inf, math.inf, visited, nodes)
 
-    def decide_best_move_expectimax(self, is_max):
+    def decide_best_move_expectimax(self, state, is_max, visited):
         # TODO
-        return None
+        return self.expectimax(0, state, is_max, visited)
 
     def solve(self, state, is_singleplayer, algo_type=None):
         # TODO
@@ -149,6 +168,17 @@ class MiniMaxSearch:
 
                 isMax = not isMax
             print("Visited " + str(nodes))
+        elif algo_type == "expectimax":
+            isMax = True
+            i = 1
+            while not state.success():
+                compteur += 1
+                state = self.decide_best_move_expectimax(state, isMax, visited)
+                if isMax:
+                    visited[state.c] = state.d * -1
+                i = self.print_previous_depth(state, compteur, i)
+
+                isMax = not isMax
 
         return state
 

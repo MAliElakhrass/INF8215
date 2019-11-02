@@ -172,6 +172,19 @@ def test14movesAlphaBeta():
     algo.solve(s, False, algo_type="pruning")
 
 
+def test9movesExpectimax():
+    # solution optimale: 9 moves
+    rh = Rushhour([True, False, False, False, True],
+                     [2, 3, 2, 3, 3],
+                     [2, 4, 5, 1, 5],
+                     ["rouge", "vert", "bleu", "orange", "jaune"])
+    s = State([1, 0, 1, 3, 2])
+    algo = MiniMaxSearch(rh, s,3)
+    algo.rushhour.init_positions(s)
+    # print(algo.rushhour.free_pos)
+    algo.solve(s, False, algo_type = "expectimax")
+
+
 if __name__ == '__main__':
     """
     # print("Partie 1 Implémentation de Rush Hour (25pts)\n")
@@ -187,7 +200,6 @@ if __name__ == '__main__':
     test16moves()
     print("Test 14 moves")
     test14moves()
-    """
     print("2.2 Implémentation adversarielle")
     print("Test 9 moves")
     test9moves3depth()
@@ -196,7 +208,7 @@ if __name__ == '__main__':
     print("Test 14 moves")
     test14moves3depth()
     """
-    # """
+    """
     print("\n\nPartie 3 Élagage Alpha-Beta (15pts)\n")
     print("Test 9 moves")
     test9movesAlphaBeta()
@@ -204,4 +216,8 @@ if __name__ == '__main__':
     test16movesAlphaBeta()
     print("Test 14 moves")
     test14movesAlphaBeta()
-    # """
+    """
+    print("\n\nPartie 4 Expectimax (15 pts)\n")
+    test9movesExpectimax()
+
+
