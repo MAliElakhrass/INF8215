@@ -101,17 +101,18 @@ class MiniMaxSearch:
                 state = self.decide_best_move_2(state, isMax, visited)
                 if isMax:
                     visited[state.c] = state.d * -1
-                i = self.yed(state, compteur, i)
+                i = self.print_previous_depth(state, compteur, i)
 
                 isMax = not isMax
 
         return state
 
-    def yed(self, state, compteur, i):
-
+    def print_previous_depth(self, state, compteur, i):
         if compteur % 2 == 1:
             first_state = state.prev
             print("Mouvement: " + str(i))
+            if first_state.success():
+                return
             self.print_move(True, first_state)
             print("Mouvement: " + str(i + 1))
             self.print_move(False, state)
@@ -123,6 +124,8 @@ class MiniMaxSearch:
             self.print_move(False, first_state)
             print("Mouvement: " + str(i + 1))
             self.print_move(True, state)
+            if state.success():
+                return
             print("Mouvement: " + str(i + 2))
             self.print_move(False, state)
 
