@@ -38,50 +38,58 @@ class MiniMaxSearch:
 
     # Retourner le score au lieu d'un state, quand t au depth de niveau 1, tu choisis le meilleur score
     # AI, Roche, AI, Roche, ...
-    def minimax_2(self, current_depth, current_state, is_max, visited):
+    def minimax_2(self, current_depth, current_state, is_max, visited, nodes):
         if current_depth == self.search_depth or current_state.success():
+            nodes += 1
             current_state.score_state(self.rushhour)
-            return current_state
+            return current_state, nodes
 
         if is_max:
             max_values = []
             children = self.remove_reverse_move(current_state, visited)
             for child_state in children:
-                max_values.append(self.minimax_2(current_depth + 1, child_state, False, visited))
-            return max(max_values)
+                child_value, nodes = self.minimax_2(current_depth + 1, child_state, False, visited, nodes)
+                nodes += 1
+                max_values.append(child_value)
+            return max(max_values), nodes
         else:
             min_values = []
             children = self.rushhour.possible_rock_moves(current_state)
             for child_state in children:
-                min_values.append(self.minimax_2(current_depth + 1, child_state, True, visited))
-            return min(min_values)
+                child_value, nodes = self.minimax_2(current_depth + 1, child_state, True, visited, nodes)
+                nodes += 1
+                min_values.append(child_value)
+            return min(min_values), nodes
 
-    def minimax_pruning(self, current_depth, current_state, is_max, alpha, beta, visited):
+    def minimax_pruning(self, current_depth, current_state, is_max, alpha, beta, visited, nodes):
         # TODO
         if current_depth == self.search_depth or current_state.success():
+            nodes += 1
             current_state.score_state(self.rushhour)
-            return current_state
+            return current_state, nodes
 
         if is_max:
             max_values = []
             children = self.remove_reverse_move(current_state, visited)
             for child_state in children:
-                child_value = self.minimax_pruning(current_depth + 1, child_state, False, alpha, beta, visited)
+                child_value, nodes = self.minimax_pruning(current_depth + 1, child_state, False, alpha, beta, visited, nodes)
+                nodes += 1
                 max_values.append(child_value)
 
                 if alpha >= child_value.score:
                     break
-            return max(max_values)
+            return max(max_values), nodes
         else:
             min_values = []
             children = self.rushhour.possible_rock_moves(current_state)
             for child_state in children:
-                child_value = self.minimax_pruning(current_depth + 1, child_state, True, alpha, beta, visited)
+                nodes += 1
+                child_value = self.minimax_pruning(current_depth + 1, child_state, True, alpha, beta, visited, nodes)[0]
                 min_values.append(child_value)
 
                 if child_value.score >= beta:
                     break
-            return min(min_values)
+            return min(min_values), nodes
 
     def expectimax(self, current_depth, current_state, is_max):
         # TODO
@@ -92,13 +100,13 @@ class MiniMaxSearch:
         return self.minimax_1(0, state, visited)
         # return state.move(best_child.c, best_child.d)
 
-    def decide_best_move_2(self, state, is_max, visited):
+    def decide_best_move_2(self, state, is_max, visited, nodes):
         # TODO
-        return self.minimax_2(0, state, is_max, visited)
+        return self.minimax_2(0, state, is_max, visited, nodes)
 
-    def decide_best_move_pruning(self, state, is_max, visited):
+    def decide_best_move_pruning(self, state, is_max, visited, nodes):
         # TODO
-        return self.minimax_pruning(0, state, is_max, -math.inf, math.inf, visited)
+        return self.minimax_pruning(0, state, is_max, -math.inf, math.inf, visited, nodes)
 
     def decide_best_move_expectimax(self, is_max):
         # TODO
@@ -108,7 +116,7 @@ class MiniMaxSearch:
         # TODO
         visited = [0] * self.rushhour.nbcars
         compteur = 0
-
+        nodes = 0
         if algo_type is None:
             if is_singleplayer:
                 while not state.success():
@@ -122,23 +130,25 @@ class MiniMaxSearch:
                 i = 1
                 while not state.success():
                     compteur += 1
-                    state = self.decide_best_move_2(state, isMax, visited)
+                    state, nodes = self.decide_best_move_2(state, isMax, visited, nodes)
                     if isMax:
                         visited[state.c] = state.d * -1
                     i = self.print_previous_depth(state, compteur, i)
 
                     isMax = not isMax
+                print("Visited " + str(nodes))
         elif algo_type == "pruning":
             isMax = True
             i = 1
             while not state.success():
                 compteur += 1
-                state = self.decide_best_move_pruning(state, isMax, visited)
+                state, nodes = self.decide_best_move_pruning(state, isMax, visited, nodes)
                 if isMax:
                     visited[state.c] = state.d * -1
                 i = self.print_previous_depth(state, compteur, i)
 
                 isMax = not isMax
+            print("Visited " + str(nodes))
 
         return state
 

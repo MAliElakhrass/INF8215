@@ -187,7 +187,7 @@ if __name__ == '__main__':
     test16moves()
     print("Test 14 moves")
     test14moves()
-    
+    """
     print("2.2 Implémentation adversarielle")
     print("Test 9 moves")
     test9moves3depth()
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     print("Test 14 moves")
     test14moves3depth()
     """
-
+    # """
     print("\n\nPartie 3 Élagage Alpha-Beta (15pts)\n")
     print("Test 9 moves")
     test9movesAlphaBeta()
@@ -204,3 +204,4 @@ if __name__ == '__main__':
     test16movesAlphaBeta()
     print("Test 14 moves")
     test14movesAlphaBeta()
+    # """
