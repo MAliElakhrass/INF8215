@@ -93,7 +93,7 @@ class MiniMaxSearch:
                     break
             return min(min_values), nodes
 
-    def expectimax(self, current_depth, current_state, is_max, visited):
+    def expectimax(self, current_depth, current_state, is_max, visited, ai_vision):
         # TODO
         if current_depth == self.search_depth or current_state.success():
             current_state.score_state(self.rushhour)
@@ -106,16 +106,34 @@ class MiniMaxSearch:
 
             max_values = []
             for child_state in children:
-                max_values.append(self.expectimax(current_depth + 1, child_state, False, visited))
+                max_values.append(self.expectimax(current_depth + 1, child_state, False, visited, ai_vision))
 
             return max(max_values)
         else:
             min_values = []
             children = self.rushhour.possible_rock_moves(current_state)
             for child_state in children:
-                min_values.append(self.expectimax(current_depth + 1, child_state, True, visited))
+                min_values.append(self.expectimax(current_depth + 1, child_state, True, visited, ai_vision))
+            sum = 0
+            for value in min_values:
+                sum += abs(value.score)
 
-            return random.choice(min_values)
+            if ai_vision == 'None':
+                return random.choice(min_values)
+            elif ai_vision == 'aleatoire':
+                return random.choice(min_values)
+            elif ai_vision == 'pessimiste':
+                min_values.sort()
+                proba = []
+                for value in min_values:
+                    proba.append(abs(value.score / sum))
+                return np.random.choice(min_values, p=proba)
+            elif ai_vision == 'optimiste':
+                min_values.sort(reverse=True)
+                proba = []
+                for value in min_values:
+                    proba.append(abs(value.score / sum))
+                return np.random.choice(min_values, p=proba)
 
     def decide_best_move_1(self, state, visited):
         # TODO
@@ -130,11 +148,12 @@ class MiniMaxSearch:
         # TODO
         return self.minimax_pruning(0, state, is_max, -math.inf, math.inf, visited, nodes)
 
-    def decide_best_move_expectimax(self, state, is_max, visited):
+    def decide_best_move_expectimax(self, state, is_max, visited, ai_vision):
         # TODO
-        return self.expectimax(0, state, is_max, visited)
+        move = self.expectimax(0, state, is_max, visited, ai_vision)
+        return move
 
-    def solve(self, state, is_singleplayer, algo_type=None):
+    def solve(self, state, is_singleplayer, algo_type=None, ai_vision="aleatoire"):
         # TODO
         visited = [0] * self.rushhour.nbcars
         compteur = 0
@@ -153,10 +172,7 @@ class MiniMaxSearch:
                 while not state.success():
                     compteur += 1
                     state, nodes = self.decide_best_move_2(state, isMax, visited, nodes)
-                    if isMax:
-                        visited[state.c] = state.d * -1
-                    i = self.print_previous_depth(state, compteur, i)
-
+                    i, visited = self.print_previous_depth(state, compteur, i, visited)
                     isMax = not isMax
                 print("Visited " + str(nodes))
         elif algo_type == "pruning":
@@ -165,49 +181,56 @@ class MiniMaxSearch:
             while not state.success():
                 compteur += 1
                 state, nodes = self.decide_best_move_pruning(state, isMax, visited, nodes)
-                if isMax:
-                    visited[state.c] = state.d * -1
-                i = self.print_previous_depth(state, compteur, i)
-
+                i, visited = self.print_previous_depth(state, compteur, i, visited)
                 isMax = not isMax
-            print("Visited " + str(nodes))
+            print("Visited " + str(nodes) + " nodes")
         elif algo_type == "expectimax":
             isMax = True
             i = 1
             while not state.success():
                 compteur += 1
-                state = self.decide_best_move_expectimax(state, isMax, visited)
-                if isMax:
-                    visited[state.c] = state.d * -1
-                i = self.print_previous_depth(state, compteur, i)
-
+                state = self.decide_best_move_expectimax(state, isMax, visited, ai_vision)
+                i, visited = self.print_previous_depth(state, compteur, i, visited)
                 isMax = not isMax
 
         return state
 
-    def print_previous_depth(self, state, compteur, i):
+    def print_previous_depth(self, state, compteur, i, visited):
         if compteur % 2 == 1:
+            # Joueur
             first_state = state.prev
+            visited[first_state.c] = first_state.d * -1
             print("Mouvement: " + str(i))
-            if first_state.success():
-                return
             self.print_move(True, first_state)
+            if first_state.success():
+                return None, None
+
+            # Roche
             print("Mouvement: " + str(i + 1))
             self.print_move(False, state)
+
+            # Joueur
+            visited[state.c] = state.d * -1
             print("Mouvement: " + str(i + 2))
             self.print_move(True, state)
         else:
+            # Roche
             first_state = state.prev
             print("Mouvement: " + str(i))
             self.print_move(False, first_state)
+
+            # Joueur
+            visited[state.c] = state.d * -1
             print("Mouvement: " + str(i + 1))
             self.print_move(True, state)
             if state.success():
-                return
+                return None, None
+
+            # Roche
             print("Mouvement: " + str(i + 2))
             self.print_move(False, state)
 
-        return i + 3
+        return i + 3, visited
 
     def print_move(self, is_max, state):
         # TODO

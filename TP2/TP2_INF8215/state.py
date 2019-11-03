@@ -27,7 +27,6 @@ class State:
     """
     Constructeur d'un état à partir du mouvement (c,d)
     """
-
     def move(self, c, d):
         s = State(self.pos)
         s.prev = self
@@ -54,49 +53,75 @@ class State:
     def success(self):
         return self.pos[0] == 4
 
+    def estimee(self, rh):
+        # Gain de 100 si l'auto rouge s'approche de la sortie
+        cost = 25 * self.pos[0]
+        # Penalite si une auto bloque l'auto rouge
+        cost -= self.cars_front_red(rh)
+        # Penalite si une auto est bloque (aucun mouvement possible)
+        cost -= self.car_blocked(rh)
+        # Gain si une auto horizontale est a gauche de l'auto rouge
+        cost += self.cars_left_red(rh)
+
+        return cost
+
+    def cars_front_red(self, rh):
+        penalty = 0
+
+        for i in range(1, rh.nbcars):
+            if not rh.horiz[i] and rh.move_on[i] >= self.pos[0] + rh.length[0] and self.pos[i] <= 2 <= \
+                    (self.pos[i] + rh.length[i] - 1):
+                if rh.length[i] == 3:
+                    penalty += ((3 - self.pos[i]) * rh.move_on[i] * 2)
+                    for j in range(self.pos[i] + rh.length[i], 6):
+                        if not rh.free_pos[j][rh.move_on[i]]:
+                            penalty += (rh.move_on[i] * self.blocking_car(j, rh.move_on[i], rh))
+                else:
+                    penalty += (rh.move_on[i] * 2)
+                    if self.pos[i] == 1:
+                        if not rh.free_pos[0][rh.move_on[i]]:
+                            penalty += (rh.move_on[i] * self.blocking_car(0, rh.move_on[i], rh))
+                    elif self.pos[i] == 2:
+                        if not rh.free_pos[4][rh.move_on[i]]:
+                            penalty += (rh.move_on[i] * self.blocking_car(4, rh.move_on[i], rh))
+
+        return penalty
+
+    def blocking_car(self, line, col, rh):
+        for i in range(1, rh.nbcars):
+            if rh.horiz[i] and rh.move_on[i] == line and self.pos[i] <= col <= self.pos[i] + rh.length[i] - 1:
+                if rh.length[i] == 3:
+                    if col >= 3:
+                        return self.pos[i]
+                    else:
+                        return 3 - self.pos[i]
+                else:
+                    return 1
+
+        # The rock is blocking
+        return 1
+
     def car_blocked(self, rh):
-        penalite = 0
+        penalty = 0
 
         possible_moves = rh.possible_moves(self)
         car_moved = [move.c for move in possible_moves]
         for i in range(1, rh.nbcars):
             if i not in car_moved:
-                penalite += (rh.move_on[i] + 1)
+                penalty += (rh.move_on[i] + 1)
 
-        return penalite
+        return penalty
 
-    def estimee(self, rh):
-        cost = 100 * self.pos[0]
-
+    def cars_left_red(self, rh):
+        gain = 0
         for i in range(1, rh.nbcars):
-            if not rh.horiz[i] and rh.move_on[i] >= self.pos[0] + rh.length[0]:
-                if rh.length[i] == 3:
-                    cost += (self.pos[i] + 1) * 15
-
-                    for j in range(self.pos[i] + rh.length[i], 6):
-                        if rh.free_pos[j][rh.move_on[i]]:
-                            cost += (rh.move_on[i] * 2)
-                else:
-                    if self.pos[i] == 1:
-                        if rh.free_pos[0][rh.move_on[i]]:
-                            cost += rh.move_on[i]
-                    elif self.pos[i] == 2:
-                        if rh.free_pos[4][rh.move_on[i]]:
-                            cost += rh.move_on[i]
-            elif rh.horiz[i] and (self.pos[i] + rh.length[i] - 1) < (self.pos[0]):
-                cost += 100
+            if rh.horiz[i] and (self.pos[i] + rh.length[i] - 1) < (self.pos[0]):
+                gain += 10
             elif rh.horiz[i] and (self.pos[i] + rh.length[i]) <= (
                     self.pos[0] + rh.length[0]):  # Si t a gauche de l'auto rouge
-                cost += 20
+                gain += 5
 
-        for i in range(self.pos[0] + rh.length[0], 6):
-            if rh.free_pos[2][i]:
-                cost += 20
-
-        # Penalite si une auto est bloque
-        cost -= self.car_blocked(rh)
-
-        return cost
+        return gain
 
     def __eq__(self, other):
         if not isinstance(other, State):
@@ -114,3 +139,6 @@ class State:
 
     def __lt__(self, other):
         return self.score < other.score
+
+    def __add__(self, other):
+        return other.score + self.score
