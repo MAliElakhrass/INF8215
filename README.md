@@ -1,0 +1,1 @@
+Repo for my assignments of the AI: methods and algorithms class
